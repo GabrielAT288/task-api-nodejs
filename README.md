@@ -34,7 +34,8 @@ Y probar fácilmente todos los endpoints.
 
 Validaciones en creación y actualización de tareas.
 
-![Captura de pantalla 2025-05-09 010547](https://github.com/user-attachments/assets/d988c7a1-ca16-43b7-a2cc-5cefb00a94f9)
+![Captura d![Captura de pantalla 2025-05-09 010547](https://github.com/user-attachments/assets/7355e533-4285-4510-b962-87824e47a273)
+e pantalla 2025-05-09 010547](https://github.com/user-attachments/assets/d988c7a1-ca16-43b7-a2cc-5cefb00a94f9)
 
 
 
