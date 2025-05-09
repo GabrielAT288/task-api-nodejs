@@ -1,0 +1,222 @@
+📋 Task Manager API
+API RESTful sencilla para gestionar tareas, desarrollada con Node.js, Express, Sequelize y SQLite.
+
+
+🧱 Estructura del Proyecto
+
+task-manager/
+├── models/
+│   └── Task.js
+├── routes/
+│   └── task.js
+├── database.js
+├── app.js
+├── package.json
+
+📦 Dependencias principales
+express
+
+sequelize
+
+sqlite3
+
+🚀 Uso
+Inicia el servidor:
+
+npm start
+# o en desarrollo con nodemon
+npm run dev
+El servidor estará disponible en:
+http://localhost:3000/tasks
+
+📌 Endpoints
+GET /tasks
+Obtiene todas las tareas.
+
+GET /tasks/:id
+Obtiene una tarea por su ID.
+
+POST /tasks
+Crea una nueva tarea.
+Body JSON requerido:
+
+{
+  "title": "Tarea importante",
+  "description": "Descripción opcional"
+}
+
+
+PUT /tasks/:id
+Actualiza una tarea existente.
+Body JSON opcional:
+
+{
+  "title": "Nuevo título",
+  "description": "Nueva descripción",
+  "completed": true
+}
+
+DELETE /tasks/:id
+Elimina una tarea por ID.
+
+🛡 Validaciones y Errores
+title es obligatorio al crear una tarea.
+
+Devuelve 404 si una tarea no existe.
+
+Middleware genérico para rutas no encontradas y errores internos.
+
+----------------------------------------------------------------------------------------
+Task.js
+const { DataTypes } = require('sequelize');const sequelize = require('../database');
+const Task = sequelize.define('Task', {
+  title: {
+    type: DataTypes.STRING,
+    allowNull: false  },  description: DataTypes.TEXT,
+  completed: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false  },  createdAt: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
+  }
+});
+
+module.exports = Task;
+--------------------------------------------------------------------------------------
+routes task.js
+
+const express = require('express');
+const router = express.Router();
+const Task = require('../models/Task');
+
+// GET todas las tareas
+router.get('/', async (req, res) => {
+  try {
+    const tasks = await Task.findAll();
+    res.json(tasks);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET tarea por ID
+router.get('/:id', async (req, res) => {
+  try {
+    const task = await Task.findByPk(req.params.id);
+    if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
+    res.json(task);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST crear tarea
+router.post('/', async (req, res) => {
+  try {
+    if (!req.body.title) {
+      return res.status(400).json({ error: 'El título es obligatorio' });
+    }
+    const task = await Task.create({
+      title: req.body.title,
+      description: req.body.description, // <--- ¡Aquí faltaba la coma!
+    });
+    res.status(201).json(task);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// PUT actualizar tarea
+router.put('/:id', async (req, res) => {
+  try {
+    const task = await Task.findByPk(req.params.id);
+    if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
+
+    await task.update({
+      title: req.body.title || task.title,
+      description: req.body.description || task.description,
+      completed: req.body.completed !== undefined ? req.body.completed : task.completed
+    });
+    res.json(task);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// DELETE eliminar tarea
+router.delete('/:id', async (req, res) => {
+  try {
+    const task = await Task.findByPk(req.params.id);
+    if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
+
+    await task.destroy();
+    res.status(204).end();
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+module.exports = router;
+-------------------------------------------------------------------------------------
+app.js
+
+const express = require('express');
+const app = express();
+const tasksRouter = require('./routes/task');
+// Middlewares
+app.use(express.json());
+// Rutas
+app.use('/tasks', tasksRouter);
+// Manejo de errores
+app.use((req, res) => {
+  res.status(404).json({ error: 'Ruta no encontrada' });
+});
+
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ error: 'Error interno del servidor' });
+});
+// Iniciar servidor
+const PORT = 3000;
+app.listen(PORT, async () => {
+  const db = require('./database');
+  await db.sync();
+  console.log(`Servidor en http://localhost:${PORT}`);
+});
+------------------------------------------------------------------------------------
+database.js
+
+const { Sequelize } = require('sequelize');
+const sequelize = new Sequelize({
+  dialect: 'sqlite',
+  storage: './database.sqlite',
+  logging: false});
+module.exports = sequelize;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
